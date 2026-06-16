@@ -33,14 +33,12 @@
 
 ```bash
 # 克隆仓库
-git clone <repo-url>
+git clone https://github.com/yrjnotyrj/orbit.git
 cd orbit
 
 # 安装（开发模式）
 pip install -e .
 
-# 或者直接安装
-pip install .
 ```
 
 ## 配置
@@ -49,7 +47,7 @@ pip install .
 
 ```env
 ANTHROPIC_API_KEY=your-api-key
-MODEL_ID=deepseek-v4-pro
+MODEL_ID=your model
 # 可选：自定义 API 地址（代理等）
 # ANTHROPIC_BASE_URL=https://your-proxy.com
 ```
@@ -74,27 +72,6 @@ python -m orbit
 | `/compact` | 手动压缩对话历史 |
 | `q` / `exit` | 退出 |
 
-## 目录结构
-
-```
-orbit/
-├── orbit/                  # 包目录
-│   ├── __init__.py         # 公共 API 导出
-│   ├── __main__.py         # python -m orbit 入口
-│   ├── cli.py              # 主入口，初始化所有组件
-│   ├── core.py             # agent_loop 主循环
-│   ├── todo.py             # TodoManager 内存任务清单
-│   ├── task_mgr.py         # TaskManager 文件持久化任务
-│   ├── background.py       # BackgroundManager 后台命令执行
-│   ├── skills.py           # SkillLoader 技能加载
-│   ├── compress.py         # Compressor 对话压缩
-│   ├── subagent.py         # run_subagent 子代理
-│   ├── bus.py              # MessageBus 消息总线
-│   ├── manager.py          # TeammateManager 队友生命周期
-│   └── tools.py            # 工具定义与处理器
-├── pyproject.toml
-└── README.md
-```
 
 运行时产生的目录：
 
@@ -113,24 +90,3 @@ orbit/
 .transcripts/               # 压缩时保存的完整对话记录
 └── transcript_<timestamp>.jsonl
 ```
-
-## API 概览
-
-```python
-from orbit import (
-    TodoManager,          # 内存任务清单
-    TaskManager,          # 文件持久化任务
-    BackgroundManager,    # 后台命令执行
-    SkillLoader,          # 技能加载
-    Compressor,           # 对话压缩
-    MessageBus,           # 消息总线
-    TeammateManager,      # 队友管理
-    agent_loop,           # 主循环
-    run_subagent,         # 子代理
-    build_system_prompt,  # 系统提示构建
-)
-```
-
-## 许可证
-
-MIT
