@@ -10,9 +10,6 @@ Commands:
     /tasks    - List all file-based tasks
     /team     - List all teammates
     /inbox    - Read lead's inbox
-    /help     - Show this help message
-    /memory   - Show current working memory (todos)
-    /reset    - Reset session history
     q, exit   - Quit
 """
 
@@ -20,9 +17,7 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 import sys
-import textwrap
 from functools import partial
 from pathlib import Path
 
@@ -46,27 +41,6 @@ from .tools import build_tool_handlers, get_tools_for_lead
 
 DEFAULT_MODEL = "deepseek-v4-pro"
 TOKEN_THRESHOLD = 100000
-
-# ASCII Art - Orbit the dog
-ORBIT_ART = (
-    "      /\\___/\\",
-    "      ( ● ω ● )",
-    "      /        \\\\",
-    "      /|        |\\\\",
-)
-
-# Help text
-HELP_TEXT = textwrap.dedent("""
-    Commands:
-    /help     Show this help message.
-    /tasks    List all file-based tasks.
-    /team     List all teammates and their status.
-    /inbox    Read and drain lead's inbox.
-    /compact  Manually compress conversation history.
-    /memory   Show current todos / working memory.
-    /reset    Reset session history (keeps team/tasks).
-    /exit     Exit orbit.
-""").strip()
 
 
 # ------------------------------------------------------------------
@@ -120,68 +94,6 @@ def _setup_client() -> tuple[Anthropic, str]:
         base_url=base_url,
     )
     return client, model
-
-
-# ------------------------------------------------------------------
-# Welcome banner
-# ------------------------------------------------------------------
-
-def build_welcome(workdir: Path, team_name: str, model: str) -> str:
-    """Build a colorful welcome banner for orbit."""
-    width = max(68, min(shutil.get_terminal_size((80, 20)).columns, 84))
-    inner = width - 4
-
-    def center(text: str) -> str:
-        """Center text within the banner width."""
-        if len(text) > inner:
-            return text[:inner]
-        padding = (inner - len(text)) // 2
-        return " " * padding + text + " " * (inner - len(text) - padding)
-
-    def divider(char: str = "-") -> str:
-        """Create a divider line."""
-        return "+" + char * (width - 2) + "+"
-
-    def row(text: str) -> str:
-        """Create a banner row with text."""
-        if len(text) > inner:
-            text = text[:inner - 3] + "..."
-        padding = inner - len(text)
-        return f"| {text}{' ' * padding} |"
-
-    # Build the banner
-    lines = []
-
-    # Top border
-    lines.append(divider("="))
-
-    # Orbit art (centered)
-    for art_line in ORBIT_ART:
-        if art_line.strip():
-            lines.append(row(center(art_line)))
-
-    # Empty line
-    lines.append(row(""))
-
-    # Title
-    lines.append(row(center("🐕 ORBIT — LOCAL CODING AGENT")))
-    lines.append(row(center("~" * 20)))
-
-    # Info
-    lines.append(row(f"Workspace: {workdir}"))
-    lines.append(row(f"Team:      {team_name}"))
-    lines.append(row(f"Model:     {model}"))
-
-    # Empty line
-    lines.append(row(""))
-
-    # Commands hint
-    lines.append(row(center("Commands: /help | /tasks | /team | /inbox | /exit")))
-
-    # Bottom border
-    lines.append(divider("="))
-
-    return "\n".join(lines)
 
 
 # ------------------------------------------------------------------
@@ -249,8 +161,10 @@ def main() -> None:
     # Build system prompt
     system = build_system_prompt(workdir, skills)
 
-    # ---- Welcome banner ----
-    print(build_welcome(workdir, team.config["team_name"], model))
+    # ---- REPL header ----
+    print(f"orbit v0.1.0 — workspace: {workdir}")
+    print(f"Team: {team.config['team_name']}")
+    print("Commands: /compact | /tasks | /team | /inbox | q/exit")
     print()
 
     # ---- REPL loop ----
@@ -267,19 +181,13 @@ def main() -> None:
 
         # Quit
         if stripped.lower() in ("q", "exit", ""):
-            print("\n🐕 Goodbye! See you next time.\n")
             break
 
         # REPL commands
-        if stripped == "/help":
-            print(HELP_TEXT)
-            continue
         if stripped == "/compact":
             if history:
-                print("[📦 manual compact]")
+                print("[manual compact via /compact]")
                 history[:] = compressor.auto_compact(history)
-            else:
-                print("Nothing to compact.")
             continue
         if stripped == "/tasks":
             print(task_mgr.list_all())
@@ -288,18 +196,13 @@ def main() -> None:
             print(team.list_all())
             continue
         if stripped == "/inbox":
-            msgs = bus.read_inbox("lead")
-            if msgs:
-                print(json.dumps(msgs, indent=2, ensure_ascii=False))
-            else:
-                print("📭 Inbox is empty.")
-            continue
-        if stripped == "/memory":
-            print(todo.render())
-            continue
-        if stripped == "/reset":
-            history = []
-            print("🧹 Session history cleared.")
+            print(
+                json.dumps(
+                    bus.read_inbox("lead"),
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
             continue
 
         # Normal turn
