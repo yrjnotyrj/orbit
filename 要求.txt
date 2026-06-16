@@ -1,0 +1,75 @@
+请帮我将 s_full.py 整合到现有的 orbit 包中，完成从单体文件到模块化包的迁移。
+
+## 任务背景
+- 当前目录：F:\work\orbit
+- s_full.py 在项目根目录下，包含了完整的 agent 功能
+- orbit目前是一个空目录
+- 需要将 s_full.py 的所有功能拆解到包的各模块中
+
+## 具体任务
+
+### 1. 模块拆分
+将 s_full.py 中的功能拆分到以下文件：
+
+- `todo.py` - TodoManager 类
+- `task_mgr.py` - TaskManager 类  
+- `background.py` - BackgroundManager 类
+- `skills.py` - SkillLoader 类
+- `compress.py` - 压缩功能：microcompact, auto_compact, estimate_tokens 
+- `subagent.py` - run_subagent 函数
+- `core.py` - 更新 agent_loop，包含所有新功能
+- `tools.py` - 添加所有新工具定义和处理器
+- `manager.py` - 更新 TeammateManager，支持 idle 和 claim_task
+- `bus.py` - 保持不变
+- `cli.py` - 更新主入口，初始化所有新组件
+- `__init__.py` -
+
+### 2. 关键功能迁移要求
+
+必须保留的功能：
+- TodoWrite 工具（任务跟踪）
+- task_create/get/update/list 工具（文件任务）
+- background_run/check_background 工具（后台执行）
+- load_skill 工具（技能加载）
+- task 工具（子代理）
+- compress 工具（手动压缩）
+- idle 工具（队友空闲）
+- claim_task 工具（任务认领）
+- 自动压缩（token 阈值触发）
+- 后台通知注入
+- Todo 提醒（3轮没更新就提醒）
+
+### 3. 系统提示词
+- 从 s_full.py 中提取 SYSTEM 变量
+- 包含技能描述动态注入
+- 使用 skills.descriptions()
+
+### 4. 目录结构要求
+保持现有的包结构（扁平布局），确保：
+- 所有新模块放在 orbit/ 包目录下
+- __init__.py 正确导出所有公共 API
+- pyproject.toml 的 [project.scripts] 保持 orbit = "orbit.cli:main"
+
+### 5. 更新 README.md
+- 使用中文编写
+- 参考以下内容（可精简或扩展）：
+
+```markdown
+# orbit
+
+`orbit` 是一个面向代码仓库的轻量本地 coding agent。它直接跑在终端里，先看当前工作区，再用一组受约束的工具去读文件、改文件、跑命令。
+
+它更像一个能在仓库里持续工作的命令行助手，不是纯聊天窗口。你可以拿它做代码排查、测试修复、仓库分析，或者让它在当前项目里执行一次性的工程任务。
+
+## 适合做什么
+
+- 在本地仓库里排查测试失败
+- 读取当前代码结构并给出修改建议
+- 基于现有文件做小步迭代，而不是脱离仓库空想
+
+## 安装
+
+需要 Python 3.9+。
+
+```bash
+pip install -e .

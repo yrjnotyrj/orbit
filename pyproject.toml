@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta:__legacy__"
 [project]
 name = "orbit"
 version = "0.1.0"
-description = "Agent Teams — persistent named agents with file-based JSONL inboxes"
+description = "轻量本地 coding agent — 终端里的仓库助手，支持队友代理、任务跟踪、后台执行、技能加载与对话压缩"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
 authors = [
     {name = "Orbit Team"},
 ]
-keywords = ["ai", "agent", "teams", "llm", "orbit"]
+keywords = ["ai", "agent", "teams", "llm", "orbit", "coding-agent"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -43,7 +43,5 @@ Repository = "https://github.com/orbit/orbit"
 orbit = "orbit.cli:main"
 
 [tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-dir]
-"orbit" = "src/orbit"
+where = ["."]
+include = ["orbit*"]
